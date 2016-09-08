@@ -102,6 +102,10 @@ public class SystemPlayerActivity extends Activity {
     private int mVol;
     private float startY;
     private int touchRang;
+    private float startX;
+    private int touchWidth;
+    private int duration;
+    private int mProgress;
 
 
     @Override
@@ -228,37 +232,59 @@ public class SystemPlayerActivity extends Activity {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
     }
-
+    private int downX,downY;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //把事件传递给手势识别器
         gd.onTouchEvent(event);
+        int eventX = (int) event.getRawX();
+        int eventY = (int) event.getRawY();
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
+                downX = eventX;
+                downY = eventY;
                 //1.按下,记录按下这个时刻的当前音量
                 mVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                //2.得到startY
-                 startY = event.getY();
+                mProgress = seekbarVideo.getProgress();
+
+                //2.得到startY,startX
+                startY = event.getY();
+                startX = event.getX();
                 //3.计算屏幕的高
                 touchRang = Math.min(screenHeight, screenWidth);
+                touchWidth = Math.max(screenHeight,screenWidth);
 
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
 
                 break;
             case MotionEvent.ACTION_MOVE:
 
-                //4.endY
+                //4.endY,endX
                 float endY = event.getY();
-                //5.计算偏移量，
+                float endX = event.getX();
+                //5.计算偏移量
                 float distanceY = startY - endY;
+                //计算X轴的偏移量
+                float distanceX = endX - startX;
                 //6.改变的声音 = （在屏幕上滑动的距离/屏幕的高）*最大音量
                 float delta = (distanceY/touchRang)*maxVolume;
+                //改变的视频进度
+                float delVideo = (distanceX/touchWidth)*duration;
                 //最终音量=原来的音量+改变的声音
                 int volume = (int)Math.min(Math.max(mVol + delta,0),maxVolume);
+                int duration1 = (int) Math.min(Math.max(mProgress+delVideo,0),duration);
+                //x轴改变的距离
+                int totalX = Math.abs(eventX - downX);
+                int totalY = Math.abs(eventY - downY);
 
-                if(delta != 0) {
+                 //当Y轴的距离大于8的时候再进行增加，减少声音
+                if(delta != 0 && totalY > 20) {
                     updataVolumeProgress(volume);
+                }
+                //当x轴的距离大于8的时候再进行快进，快退
+                if(duration1 != 0 && totalX > 20) {
+                    updataVideoProgress(duration1);
                 }
                 break;
             case MotionEvent.ACTION_UP:
@@ -267,6 +293,15 @@ public class SystemPlayerActivity extends Activity {
                 break;
         }
         return super.onTouchEvent(event);
+    }
+
+    private void updataVideoProgress(int duration1) {
+        //调节视频进度
+        seekbarVideo.setProgress(duration1);
+        //将视频的位置设置到最终的点
+        videoview.seekTo(duration1);
+        //改变左边显示的视频时间
+        tvCurrenttime.setText(utils.stringForTime(duration1));
     }
 
     @Override
@@ -312,7 +347,7 @@ public class SystemPlayerActivity extends Activity {
                 Log.e("TAG", "videoHeight" + videoHeight);
                 videoview.start();//开始播放
                 //得到视频的总时长
-                int duration = videoview.getDuration();
+                duration = videoview.getDuration();
                 seekbarVideo.setMax(duration);
                 //设置总时长
                 tvDuration.setText(utils.stringForTime(duration));
