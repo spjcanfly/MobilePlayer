@@ -1,5 +1,8 @@
 package com.example.spj.mobileplayer.utils;
 
+import android.content.Context;
+import android.net.TrafficStats;
+
 import java.util.Formatter;
 import java.util.Locale;
 
@@ -9,6 +12,8 @@ import java.util.Locale;
 public  class Utils {
     private StringBuilder mFormatBuilder;
     private Formatter mFormatter;
+    private long lastTotalRxBytes = 0;
+    private long lastTimeStamp = 0;
 
     public  Utils() {
         // 转换成字符串的时间
@@ -37,5 +42,37 @@ public  class Utils {
         } else {
             return mFormatter.format("%02d:%02d", minutes, seconds).toString();
         }
+    }
+
+    //判断是否是网络地址
+    public boolean isNetUri(String data){
+        boolean result = false;
+        if(data != null) {
+            if(data.toLowerCase().startsWith("http") || data.toLowerCase().startsWith("mms") || data.toLowerCase().startsWith("rtsp")) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 每隔一秒钟调用
+     * @param context
+     * @return
+     */
+    public String getNetSpeed(Context context) {
+
+        String reuls = "10KB/s";
+        long nowTotalRxBytes = TrafficStats.getUidRxBytes(context.getApplicationInfo().uid) == TrafficStats.UNSUPPORTED ? 0 : (TrafficStats.getTotalRxBytes() / 1024);//转为KB
+        ;
+        long nowTimeStamp = System.currentTimeMillis();
+        long speed = ((nowTotalRxBytes - lastTotalRxBytes) * 1000 / (nowTimeStamp - lastTimeStamp));//毫秒转换
+
+        lastTimeStamp = nowTimeStamp;
+        lastTotalRxBytes = nowTotalRxBytes;
+
+        reuls = String.valueOf(speed) + " kb/s";
+        return reuls;
+
     }
 }

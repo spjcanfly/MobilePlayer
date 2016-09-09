@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">播放器</string>
+    <string name="player_name">系统推荐</string>
 </resources>
