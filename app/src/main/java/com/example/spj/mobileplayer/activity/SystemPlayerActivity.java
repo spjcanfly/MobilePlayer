@@ -595,6 +595,7 @@ public class SystemPlayerActivity extends Activity {
                 MediaItem mediaItem = mediaItems.get(position);
                 videoview.setVideoPath(mediaItem.getData());
                 tvName.setText(mediaItem.getName());
+                btnPlayPause.setBackgroundResource(R.drawable.btn_pause_selector);
                 setButtonStatus();
             }
         }
@@ -607,7 +608,7 @@ public class SystemPlayerActivity extends Activity {
                 MediaItem mediaItem = mediaItems.get(position);
                 videoview.setVideoPath(mediaItem.getData());
                 tvName.setText(mediaItem.getName());
-
+                btnPlayPause.setBackgroundResource(R.drawable.btn_pause_selector);
                 setButtonStatus();
 
                 if (position == mediaItems.size() - 1) {
@@ -621,25 +622,14 @@ public class SystemPlayerActivity extends Activity {
 
     private void setButtonStatus() {
         if (mediaItems != null && mediaItems.size() > 0) {
-            if (mediaItems.size() == 1) {
-                setEnable(false);
-            } else {
-                //集合的大小大于1
-                if (position == 0) {
-                    btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
-                    btnPre.setEnabled(false);
-
-                    btnNext.setBackgroundResource(R.drawable.btn_next_selector);
-                    btnNext.setEnabled(true);
-                } else if (position == mediaItems.size() - 1) {
-                    btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
-                    btnPre.setEnabled(true);
-
-                    btnNext.setBackgroundResource(R.drawable.btn_next_gray);
-                    btnNext.setEnabled(false);
-                } else {
-                    setEnable(true);
-                }
+            setEnable(true);
+            if(position == 0) {
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+            if(position == mediaItems.size()-1) {
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
             }
         } else if (uri != null) {
             //播放一个地址
@@ -677,10 +667,16 @@ public class SystemPlayerActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        //移除注册的广播
-        unregisterReceiver(receiver);
+        if(receiver != null) {
+            //移除注册的广播
+            unregisterReceiver(receiver);
+           receiver = null;
+        }
         //移除所有消息
         handler.removeCallbacksAndMessages(null);
+        ButterKnife.unbind(this);
+
+        super.onDestroy();
+
     }
 }
