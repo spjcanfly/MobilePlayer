@@ -21,13 +21,18 @@ import com.example.spj.mobileplayer.domain.MediaItem;
 
 import java.util.ArrayList;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * Created by spj on 2016/9/6.
  */
 public class VideoFragment extends BaseFragment {
 
-    private ListView listView;
-    private TextView tv_nomedia;
+    @Bind(R.id.listview)
+    ListView listview;
+    @Bind(R.id.tv_namedia)
+    TextView tvNamedia;
     private ArrayList<MediaItem> mediaItems;
 
     private Handler handler = new Handler() {
@@ -36,13 +41,13 @@ public class VideoFragment extends BaseFragment {
             super.handleMessage(msg);
             if (mediaItems != null && mediaItems.size() > 0) {
                 //有数据
-                tv_nomedia.setVisibility(View.GONE);
+                tvNamedia.setVisibility(View.GONE);
                 //设置适配器
-                adapter = new VideoFragmentAdapter(mContext, mediaItems);
-                listView.setAdapter(adapter);
+                adapter = new VideoFragmentAdapter(mContext, mediaItems, true);
+                listview.setAdapter(adapter);
             } else {
                 //没有数据
-                tv_nomedia.setVisibility(View.VISIBLE);
+                tvNamedia.setVisibility(View.VISIBLE);
             }
         }
     };
@@ -51,11 +56,10 @@ public class VideoFragment extends BaseFragment {
     @Override
     public View initView() {
         View view = View.inflate(mContext, R.layout.fragment_video, null);
-        listView = (ListView) view.findViewById(R.id.listview);
-        tv_nomedia = (TextView) view.findViewById(R.id.tv_nomedia);
+        ButterKnife.bind(this, view);
 
         //设置item的点击事件
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
@@ -66,13 +70,13 @@ public class VideoFragment extends BaseFragment {
 //                mContext.startActivity(intent);
                 //2.使用自己写的播放器播放
                 Intent intent = new Intent(mContext, SystemPlayerActivity.class);
-                //传递列表
 
+                //传递列表
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("videolist",mediaItems);
+                bundle.putSerializable("videolist", mediaItems);
 
                 intent.putExtras(bundle);
-                intent.putExtra("position",position);
+                intent.putExtra("position", position);
                 mContext.startActivity(intent);
             }
         });
@@ -124,5 +128,12 @@ public class VideoFragment extends BaseFragment {
                 handler.sendEmptyMessage(0);
             }
         }.start();
+    }
+
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 }

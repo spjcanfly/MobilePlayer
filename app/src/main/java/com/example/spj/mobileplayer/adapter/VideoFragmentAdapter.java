@@ -25,11 +25,13 @@ public class VideoFragmentAdapter extends BaseAdapter {
     private  Context mContext;
     private final ArrayList<MediaItem> mediaItems;
     private final Utils utils;
+    private boolean isVideo = true;
 
-    public VideoFragmentAdapter(Context mContext, ArrayList<MediaItem> mediaItems) {
+    public VideoFragmentAdapter(Context mContext, ArrayList<MediaItem> mediaItems,boolean isVideo) {
         this.mContext = mContext;
         this.mediaItems = mediaItems;
-        utils = new Utils();
+        utils =Utils.getInstance();
+        this.isVideo = isVideo;
     }
 
     @Override
@@ -68,8 +70,13 @@ public class VideoFragmentAdapter extends BaseAdapter {
         viewHolder.tv_time.setText(utils.stringForTime((int) mediaItem.getDuration()));
         viewHolder.tv_size.setText(Formatter.formatFileSize(mContext, mediaItem.getSize()));
 
-        //加载视频的缩略图
-        loadImage(data,viewHolder.iv_icon);
+
+        if(isVideo) {
+            //加载视频的缩略图
+            loadImage(data,viewHolder.iv_icon);
+        }else {
+            viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+        }
 
 
         return convertView;

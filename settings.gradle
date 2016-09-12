@@ -1,1 +1,1 @@
-include ':app', ':MaterialRefreshLayout_library', ':vitamio', ':xutils'
+include ':app', ':MaterialRefreshLayout_library', ':vitamio', ':xutils', ':EventBus'

@@ -160,7 +160,7 @@ public class VitamioPlayerActivity extends Activity {
     }
 
     private void initData() {
-        utils = new Utils();
+        utils = Utils.getInstance();
 
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -448,6 +448,7 @@ public class VitamioPlayerActivity extends Activity {
             public void onStartTrackingTouch(SeekBar seekBar) {
 
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
+
             }
 
             @Override

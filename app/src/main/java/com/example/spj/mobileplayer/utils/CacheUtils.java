@@ -3,6 +3,8 @@ package com.example.spj.mobileplayer.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.spj.mobileplayer.service.MusicPlayerService;
+
 /**
  * Created by spj on 2016/9/9.
  */
@@ -37,6 +39,28 @@ public class CacheUtils {
     public static String getString(Context context,String key){
         SharedPreferences sp = context.getSharedPreferences("atguigu",Context.MODE_PRIVATE);
         return sp.getString(key,"");
+
+    }
+    /**
+     *
+     * @param context
+     * @param key
+     * @return
+     */
+    public static int getPlaymode(Context context, String key) {
+        SharedPreferences sp = context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
+        return sp.getInt(key, MusicPlayerService.REPEAT_NOMAL);
+    }
+
+    /**
+     * 保存播放模式
+     * @param context
+     * @param key
+     * @param value
+     */
+    public static void putPlaymode(Context context, String key, int value) {
+        SharedPreferences sp = context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
+        sp.edit().putInt(key,value).commit();
 
     }
 }

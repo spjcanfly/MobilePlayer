@@ -20,7 +20,7 @@
         <activity
             android:name=".activity.MainActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTask"></activity>
+            android:launchMode="singleTask" />
         <activity android:name=".activity.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -248,10 +248,10 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.VitamioPlayerActivity"
+        <activity
+            android:name=".activity.VitamioPlayerActivity"
             android:screenOrientation="landscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
-            ></activity>
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
         <!-- Don't forgot InitActivity -->
         <activity
             android:name="io.vov.vitamio.activity.InitActivity"
@@ -259,6 +259,14 @@
             android:launchMode="singleTop"
             android:theme="@android:style/Theme.NoTitleBar"
             android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".activity.AudioPlayerActivity" android:launchMode="singleTask"></activity>
+        <service android:name=".service.MusicPlayerService">
+            <intent-filter >
+                <action android:name="com.mobilepalyer.OPENAUDIO"/>
+            </intent-filter>
+
+        </service>
+
     </application>
 
 </manifest>

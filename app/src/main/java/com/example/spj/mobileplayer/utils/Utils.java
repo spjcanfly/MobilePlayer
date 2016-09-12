@@ -10,16 +10,22 @@ import java.util.Locale;
  * 作用：工具类
  */
 public  class Utils {
-    private StringBuilder mFormatBuilder;
-    private Formatter mFormatter;
+    private static StringBuilder mFormatBuilder;
+    private static Formatter mFormatter;
     private long lastTotalRxBytes = 0;
     private long lastTimeStamp = 0;
+    private static Utils instance=null;
 
-    public  Utils() {
+    private   Utils() {
+
+    }
+
+    public static Utils getInstance(){
         // 转换成字符串的时间
         mFormatBuilder = new StringBuilder();
         mFormatter = new Formatter(mFormatBuilder, Locale.getDefault());
 
+        return instance ==null?new Utils():instance;
     }
 
     /**

@@ -151,7 +151,7 @@ public class SystemPlayerActivity extends Activity {
     }
 
     private void initData() {
-        utils = new Utils();
+        utils = Utils.getInstance();
 
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
