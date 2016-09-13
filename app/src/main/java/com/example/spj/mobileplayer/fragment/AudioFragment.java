@@ -100,6 +100,10 @@ public class AudioFragment extends BaseFragment {
                         MediaStore.Audio.Media.DURATION,
                         MediaStore.Audio.Media.DATA,
                         MediaStore.Audio.Media.ARTIST,
+                        //这两个字段用于获取歌曲的专辑图片
+                        MediaStore.Audio.Media.ALBUM_ID,
+                        MediaStore.Audio.Media._ID,
+
                 };
                 Cursor cursor = resolver.query(uri, objs, null, null, null);
                 if (cursor != null) {
@@ -115,6 +119,10 @@ public class AudioFragment extends BaseFragment {
                         item.setData(data);
                         String artist = cursor.getString(4);
                         item.setArtist(artist);
+                        long album_id = cursor.getInt(5);
+                        item.setAlbum_id(album_id);
+                        long id = cursor.getLong(6);
+                        item.setId(id);
                         //将每一个对象放入集合中
                         mediaItems.add(item);
                     }

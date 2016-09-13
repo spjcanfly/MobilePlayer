@@ -12,6 +12,28 @@ public class MediaItem implements Serializable{
     private long duration;
     private String imageUrl;
     private String desc;
+    private String artist;
+    //专辑的图片的id
+    private long album_id;
+    private long id;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getAlbum_id() {
+        return album_id;
+
+    }
+
+    public void setAlbum_id(long album_id) {
+        this.album_id = album_id;
+    }
+
 
     public String getImageUrl() {
         return imageUrl;
@@ -69,8 +91,6 @@ public class MediaItem implements Serializable{
         this.artist = artist;
     }
 
-    private String artist;
-
     @Override
     public String toString() {
         return "MediaItem{" +
@@ -78,7 +98,11 @@ public class MediaItem implements Serializable{
                 ", data='" + data + '\'' +
                 ", size=" + size +
                 ", duration=" + duration +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", desc='" + desc + '\'' +
                 ", artist='" + artist + '\'' +
+                ", album_id=" + album_id +
+                ", id=" + id +
                 '}';
     }
 }

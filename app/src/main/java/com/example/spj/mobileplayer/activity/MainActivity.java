@@ -1,10 +1,13 @@
 package com.example.spj.mobileplayer.activity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.view.KeyEvent;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.example.spj.mobileplayer.R;
 import com.example.spj.mobileplayer.base.BaseFragment;
@@ -20,6 +23,7 @@ public class MainActivity extends FragmentActivity {
     private RadioGroup rg_main;
     private ArrayList<BaseFragment> baseFragments;
     private  Fragment mContent;
+    private int position;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +61,7 @@ public class MainActivity extends FragmentActivity {
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
 
-             int position =0;
+            position = 0;
 
 
             switch (checkedId) {
@@ -116,5 +120,33 @@ public class MainActivity extends FragmentActivity {
             return baseFragments.get(position);
         }
         return null;
+    }
+
+    private  boolean isExit=true;
+    private Handler handler = new Handler();
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK) {
+            if(position != 0) {
+                rg_main.check(R.id.rb_local_video);
+                return true;
+            }else {
+                if(isExit) {
+                    isExit = false;
+                    Toast.makeText(MainActivity.this, "再按一次退出！", Toast.LENGTH_SHORT).show();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            isExit = true;
+                        }
+                    },2000);
+                }
+                return true;
+            }
+
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }

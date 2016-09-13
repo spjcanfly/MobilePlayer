@@ -26,6 +26,8 @@ public class VideoFragmentAdapter extends BaseAdapter {
     private final ArrayList<MediaItem> mediaItems;
     private final Utils utils;
     private boolean isVideo = true;
+    //加载封面图片,列表的位置
+    private int pos=-1;
 
     public VideoFragmentAdapter(Context mContext, ArrayList<MediaItem> mediaItems,boolean isVideo) {
         this.mContext = mContext;
@@ -75,7 +77,13 @@ public class VideoFragmentAdapter extends BaseAdapter {
             //加载视频的缩略图
             loadImage(data,viewHolder.iv_icon);
         }else {
-            viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+
+            if(position == pos) {
+                viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+            }else {
+                Bitmap bitmap = Utils.getArtworkFromFile(mContext, mediaItem.getId(), mediaItem.getAlbum_id());
+                viewHolder.iv_icon.setImageBitmap(bitmap);
+            }
         }
 
 

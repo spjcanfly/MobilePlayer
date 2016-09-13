@@ -21,6 +21,8 @@ import com.example.spj.mobileplayer.activity.AudioPlayerActivity;
 import com.example.spj.mobileplayer.domain.MediaItem;
 import com.example.spj.mobileplayer.utils.CacheUtils;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -110,6 +112,16 @@ public class MusicPlayerService extends Service {
         public void notifyChange(String action) throws RemoteException {
 
             service.notifyChange(action);
+        }
+
+        @Override
+        public String getAudioPath() throws RemoteException {
+            return mediaItem.getData();
+        }
+
+        @Override
+        public int getAudioSessionId() throws RemoteException {
+            return mediaPlayer.getAudioSessionId();
         }
     };
 
@@ -410,8 +422,10 @@ public class MusicPlayerService extends Service {
     //发广播
     private void notifyChange(String action) {
 
-        Intent intent = new Intent(action);
-        sendBroadcast(intent);
+//        Intent intent = new Intent(action);
+//        sendBroadcast(intent);
+        //3.enventBus 事件发布
+        EventBus.getDefault().post(mediaItem);
     }
 
     private class MyOnPreparedListener implements MediaPlayer.OnPreparedListener {

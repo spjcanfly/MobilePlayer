@@ -83,6 +83,15 @@ interface IMusicPlayerService {
           */
           boolean isPlaying();
 
+          //发广播
           void notifyChange(String action);
+
+           /**
+            得到音乐播放的绝对路径
+            */
+
+          String getAudioPath();
+
+          int getAudioSessionId();
 
 }
