@@ -2,6 +2,7 @@ package com.example.spj.mobileplayer.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.text.format.Formatter;
@@ -78,11 +79,27 @@ public class VideoFragmentAdapter extends BaseAdapter {
             loadImage(data,viewHolder.iv_icon);
         }else {
 
-            if(position == pos) {
+//            if(position == pos) {
+//                viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+//            }else {
+//                Bitmap bitmap = Utils.getArtworkFromFile(mContext, mediaItem.getId(), mediaItem.getAlbum_id());
+//                viewHolder.iv_icon.setImageBitmap(bitmap);
+//            }
+            //设置音乐专辑的图片
+            Uri selectedAudio = Uri.parse(mediaItem.getData());
+            MediaMetadataRetriever myRetriever = new MediaMetadataRetriever();
+            myRetriever.setDataSource(mContext, selectedAudio); // the URI of audio file
+            byte[] artwork;
+
+            artwork = myRetriever.getEmbeddedPicture();
+
+            if (artwork != null) {
+                Bitmap bMap = BitmapFactory.decodeByteArray(artwork, 0, artwork.length);
+                viewHolder.iv_icon.setImageBitmap(bMap);
+
+            } else {
                 viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
-            }else {
-                Bitmap bitmap = Utils.getArtworkFromFile(mContext, mediaItem.getId(), mediaItem.getAlbum_id());
-                viewHolder.iv_icon.setImageBitmap(bitmap);
+
             }
         }
 

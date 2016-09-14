@@ -1,5 +1,8 @@
 package com.example.spj.mobileplayer.activity;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -29,11 +32,36 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        isGrantExternalRW(this);
+
         initView();
 
         initFragment();
 
         setListener();
+    }
+
+    /**
+     * 解决安卓6.0以上版本不能读取外部存储权限的问题
+     * @param activity
+     * @return
+     */
+    public static boolean isGrantExternalRW(MainActivity activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && activity.checkSelfPermission(
+
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+
+            activity.requestPermissions(new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.ACCESS_NETWORK_STATE,
+            }, 1);
+
+            return false;
+        }
+
+        return true;
     }
 
     private void setListener() {
@@ -142,8 +170,9 @@ public class MainActivity extends FragmentActivity {
                             isExit = true;
                         }
                     },2000);
+                    return true;
                 }
-                return true;
+
             }
 
         }

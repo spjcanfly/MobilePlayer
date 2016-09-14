@@ -1,12 +1,14 @@
 package com.example.spj.mobileplayer.view;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.spj.mobileplayer.R;
+import com.example.spj.mobileplayer.activity.SearchActivity;
 
 /**
  * Created by spj on 2016/9/6.
@@ -50,7 +52,9 @@ public class Titlebar extends LinearLayout implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.tv_search :
-                Toast.makeText(mContext, "搜索", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "搜索", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(mContext, SearchActivity.class);
+                mContext.startActivity(intent);
                 break;
             case R.id.rl_game:
                 Toast.makeText(mContext, "游戏", Toast.LENGTH_SHORT).show();

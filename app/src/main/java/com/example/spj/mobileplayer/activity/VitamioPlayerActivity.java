@@ -27,12 +27,14 @@ import android.widget.Toast;
 
 import com.example.spj.mobileplayer.R;
 import com.example.spj.mobileplayer.domain.MediaItem;
+import com.example.spj.mobileplayer.domain.SearchBean;
 import com.example.spj.mobileplayer.utils.Utils;
 import com.example.spj.mobileplayer.view.VitamioVideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -51,6 +53,8 @@ public class VitamioPlayerActivity extends Activity {
     private static final int SCREEN_DEFAULT = 3;
     //全屏
     private static final int SCREEN_FULL = 4;
+//    //判断传递过来的是否是搜索页面的
+//    private boolean isNews;
 
     /**
      * 显示网络速度
@@ -105,6 +109,7 @@ public class VitamioPlayerActivity extends Activity {
     private Uri uri;
     private int position;
     private ArrayList<MediaItem> mediaItems;
+    private List<SearchBean.ItemsEntity> news;
     private Utils utils;
     private boolean isShowMediaController = false;
     private GestureDetector gd;
@@ -344,6 +349,18 @@ public class VitamioPlayerActivity extends Activity {
     }
 
     private void setData() {
+
+//        if(isNews) {
+//            if(news != null && news.size()>0) {
+//                //从列表播放
+//                SearchBean.ItemsEntity new1 = news.get(position);
+//                isNetUri = utils.isNetUri(new1.getDetailUrl());
+//                LogUtil.e("new1.getDetailUrl()"+new1.getDetailUrl());
+//                videoview.setVideoPath(new1.getDetailUrl());
+//                tvName.setText(new1.getItemTitle());
+//            }
+//            return;
+//        }
         if (mediaItems != null && mediaItems.size() > 0) {
             //从列表播放
             MediaItem mediaItem = mediaItems.get(position);
@@ -576,6 +593,12 @@ public class VitamioPlayerActivity extends Activity {
     private void getData() {
         //播放本地文件
         uri = getIntent().getData();
+//        isNews = getIntent().getBooleanExtra("isNews", true);
+//        if(isNews) {
+//            news = (List<SearchBean.ItemsEntity>) getIntent().getSerializableExtra("videolist");
+//            position = getIntent().getIntExtra("position", 0);
+//        }
+
         mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
         position = getIntent().getIntExtra("position", 0);
     }
