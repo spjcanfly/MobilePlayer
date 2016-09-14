@@ -32,17 +32,17 @@
             style="@style/bottom_tab_style" />
         <RadioButton
             android:id="@+id/rb_local_audio"
-            android:text="本地视频"
+            android:text="本地音乐"
             android:drawableTop="@drawable/rb_local_audio_drawable_selector"
             style="@style/bottom_tab_style" />
         <RadioButton
             android:id="@+id/rb_net_video"
-            android:text="本地视频"
+            android:text="网络视频"
             android:drawableTop="@drawable/rb_net_video_drawable_selector"
             style="@style/bottom_tab_style" />
         <RadioButton
             android:id="@+id/rb_net_audio"
-            android:text="本地视频"
+            android:text="网络音乐"
             android:drawableTop="@drawable/rb_net_audio_drawable_selector"
             style="@style/bottom_tab_style" />
 

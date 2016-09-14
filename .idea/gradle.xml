@@ -10,7 +10,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/EventBus" />
+            <option value="$PROJECT_DIR$/MaterialRefreshLayout_library" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/vitamio" />
+            <option value="$PROJECT_DIR$/xutils" />
           </set>
         </option>
       </GradleProjectSettings>

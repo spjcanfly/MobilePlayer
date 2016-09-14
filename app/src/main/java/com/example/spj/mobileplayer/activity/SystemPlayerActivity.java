@@ -1,8 +1,10 @@
 package com.example.spj.mobileplayer.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -27,6 +29,7 @@ import android.widget.Toast;
 import com.example.spj.mobileplayer.R;
 import com.example.spj.mobileplayer.domain.MediaItem;
 import com.example.spj.mobileplayer.utils.Utils;
+import com.example.spj.mobileplayer.view.VideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,8 +52,13 @@ public class SystemPlayerActivity extends Activity {
     private static final int SCREEN_DEFAULT = 3;
     //全屏
     private static final int SCREEN_FULL = 4;
+
+    //是否是网络地址
+    private boolean isNetUri;
+    @Bind(R.id.tv_loading)
+    TextView tvLoading;
     @Bind(R.id.videoview)
-    com.example.spj.mobileplayer.view.VideoView videoview;
+    VideoView videoview;
     @Bind(R.id.tv_name)
     TextView tvName;
     @Bind(R.id.iv_battery)
@@ -83,6 +91,11 @@ public class SystemPlayerActivity extends Activity {
     Button btnSwitchScreen;
     @Bind(R.id.ll_bottom)
     LinearLayout llBottom;
+    @Bind(R.id.video_loading)
+    LinearLayout video_loading;
+    @Bind(R.id.video_buffer)
+    LinearLayout video_buffer;
+
     private Uri uri;
     private int position;
     private ArrayList<MediaItem> mediaItems;
@@ -97,11 +110,15 @@ public class SystemPlayerActivity extends Activity {
     private AudioManager audioManager;
     private int currentVolume;
     private int maxVolume;
-    private boolean isMute=false;
+    private boolean isMute = false;
     private MyBroadcastReceiver receiver;
     private int mVol;
     private float startY;
     private int touchRang;
+    private float startX;
+    private int touchWidth;
+    private int duration;
+    private int mProgress;
 
 
     @Override
@@ -134,7 +151,7 @@ public class SystemPlayerActivity extends Activity {
     }
 
     private void initData() {
-        utils = new Utils();
+        utils = Utils.getInstance();
 
         audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
         currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -147,8 +164,8 @@ public class SystemPlayerActivity extends Activity {
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
 
-        Log.e("TAG", "screenWidth"+screenWidth);
-        Log.e("TAG", "screenHeight"+screenHeight);
+        Log.e("TAG", "screenWidth" + screenWidth);
+        Log.e("TAG", "screenHeight" + screenHeight);
 
         //1.创建手势识别器
         gd = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
@@ -229,59 +246,92 @@ public class SystemPlayerActivity extends Activity {
         }
     }
 
+    private int downX, downY;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         //把事件传递给手势识别器
         gd.onTouchEvent(event);
+        int eventX = (int) event.getRawX();
+        int eventY = (int) event.getRawY();
         switch (event.getAction()) {
 
             case MotionEvent.ACTION_DOWN:
+                downX = eventX;
+                downY = eventY;
                 //1.按下,记录按下这个时刻的当前音量
                 mVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-                //2.得到startY
-                 startY = event.getY();
+                mProgress = seekbarVideo.getProgress();
+
+                //2.得到startY,startX
+                startY = event.getY();
+                startX = event.getX();
                 //3.计算屏幕的高
                 touchRang = Math.min(screenHeight, screenWidth);
+                touchWidth = Math.max(screenHeight, screenWidth);
 
                 handler.removeMessages(HIDE_MEDIACONTROLLER);
 
                 break;
             case MotionEvent.ACTION_MOVE:
 
-                //4.endY
+                //4.endY,endX
                 float endY = event.getY();
-                //5.计算偏移量，
+                float endX = event.getX();
+                //5.计算偏移量
                 float distanceY = startY - endY;
+                //计算X轴的偏移量
+                float distanceX = endX - startX;
                 //6.改变的声音 = （在屏幕上滑动的距离/屏幕的高）*最大音量
-                float delta = (distanceY/touchRang)*maxVolume;
+                float delta = (distanceY / touchRang) * maxVolume;
+                //改变的视频进度
+                float delVideo = (distanceX / touchWidth) * duration;
                 //最终音量=原来的音量+改变的声音
-                int volume = (int)Math.min(Math.max(mVol + delta,0),maxVolume);
+                int volume = (int) Math.min(Math.max(mVol + delta, 0), maxVolume);
+                int duration1 = (int) Math.min(Math.max(mProgress + delVideo, 0), duration);
+                //x轴改变的距离
+                int totalX = Math.abs(eventX - downX);
+                int totalY = Math.abs(eventY - downY);
 
-                if(delta != 0) {
+                //当Y轴的距离大于8的时候再进行增加，减少声音
+                if (delta != 0 && totalY > 20) {
                     updataVolumeProgress(volume);
+                }
+                //当x轴的距离大于8的时候再进行快进，快退
+                if (duration1 != 0 && totalX > 20) {
+                    updataVideoProgress(duration1);
                 }
                 break;
             case MotionEvent.ACTION_UP:
 
-                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,3000);
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 3000);
                 break;
         }
         return super.onTouchEvent(event);
     }
 
+    private void updataVideoProgress(int duration1) {
+        //调节视频进度
+        seekbarVideo.setProgress(duration1);
+        //将视频的位置设置到最终的点
+        videoview.seekTo(duration1);
+        //改变左边显示的视频时间
+        tvCurrenttime.setText(utils.stringForTime(duration1));
+    }
+
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             currentVolume++;
             updataVolumeProgress(currentVolume);
             handler.removeMessages(HIDE_MEDIACONTROLLER);
-            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,3000);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 3000);
             return true;
-        }else if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             currentVolume--;
             updataVolumeProgress(currentVolume);
             handler.removeMessages(HIDE_MEDIACONTROLLER);
-            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,3000);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 3000);
             return true;
         }
         return super.onKeyDown(keyCode, event);
@@ -291,11 +341,14 @@ public class SystemPlayerActivity extends Activity {
         if (mediaItems != null && mediaItems.size() > 0) {
             //从列表播放
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri = utils.isNetUri(mediaItem.getData());
             videoview.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
         } else if (uri != null) {
+            isNetUri = utils.isNetUri(uri.toString());
             //文件夹
             videoview.setVideoURI(uri);
+            tvName.setText(uri.toString());
         }
         setButtonStatus();
     }
@@ -303,27 +356,7 @@ public class SystemPlayerActivity extends Activity {
     private void setListener() {
 
         //设置三个监听，准备好了，播放出错，播放完成
-        videoview.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                videoWidth = mp.getVideoWidth();
-                videoHeight = mp.getVideoHeight();
-                Log.e("TAG", "videoWidth" + videoWidth);
-                Log.e("TAG", "videoHeight" + videoHeight);
-                videoview.start();//开始播放
-                //得到视频的总时长
-                int duration = videoview.getDuration();
-                seekbarVideo.setMax(duration);
-                //设置总时长
-                tvDuration.setText(utils.stringForTime(duration));
-                //发消息更新seekbar
-                handler.sendEmptyMessage(PROGRESS);
-
-                hideMediaController();
-                //默认屏幕播放
-                setVideoType(SCREEN_DEFAULT);
-            }
-        });
+        videoview.setOnPreparedListener(new MyOnPreparedListener());
 
         videoview.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
@@ -335,7 +368,10 @@ public class SystemPlayerActivity extends Activity {
         videoview.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Toast.makeText(SystemPlayerActivity.this, "播放出错了", Toast.LENGTH_SHORT).show();
+                //1.格式不支持---跳转到万能播放器继续播放
+                startViatamioPlayer();
+                //2.播放网络视频的过程中网络中断---三次重试
+                //3.播放文件中间有损坏--下载文件bug修改
                 return true;
             }
         });
@@ -390,9 +426,63 @@ public class SystemPlayerActivity extends Activity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
-                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,3000);
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 3000);
             }
         });
+    }
+
+    private void startViatamioPlayer() {
+
+        if(videoview != null) {
+            videoview.stopPlayback();
+        }
+        //传递视频列表
+        Intent intent = new Intent(this,VitamioPlayerActivity.class);
+        if(mediaItems!= null && mediaItems.size()>0){
+
+
+            //传递列表
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("videolist", mediaItems);
+            intent.putExtras(bundle);
+
+            //传递位置
+            intent.putExtra("position", position);
+
+        }else if(uri != null){
+            intent.setData(uri) ;
+        }
+
+        startActivity(intent);
+
+        //关闭系统播放器
+        finish();
+    }
+
+    class MyOnPreparedListener implements MediaPlayer.OnPreparedListener {
+
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            videoWidth = mp.getVideoWidth();
+            videoHeight = mp.getVideoHeight();
+            Log.e("TAG", "videoWidth" + videoWidth);
+            Log.e("TAG", "videoHeight" + videoHeight);
+            videoview.start();//开始播放
+            //得到视频的总时长
+            duration = videoview.getDuration();
+            seekbarVideo.setMax(duration);
+            //设置总时长
+            tvDuration.setText(utils.stringForTime(duration));
+            //发消息更新seekbar
+            handler.sendEmptyMessage(PROGRESS);
+
+            hideMediaController();
+            //默认屏幕播放
+            setVideoType(SCREEN_DEFAULT);
+
+            //把加载页面消掉
+            video_loading.setVisibility(View.GONE);
+        }
     }
 
     private void updataVolumeProgress(int progress) {
@@ -402,9 +492,9 @@ public class SystemPlayerActivity extends Activity {
         seekbarVoice.setProgress(progress);
         currentVolume = progress;
         //是否静音
-        if(progress<=0) {
+        if (progress <= 0) {
             isMute = true;
-        }else {
+        } else {
             isMute = false;
         }
     }
@@ -424,6 +514,7 @@ public class SystemPlayerActivity extends Activity {
 
     }
 
+    private int prePositiron=0;
     private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -435,8 +526,36 @@ public class SystemPlayerActivity extends Activity {
                     int progress = videoview.getCurrentPosition();
                     seekbarVideo.setProgress(progress);
                     tvCurrenttime.setText(utils.stringForTime(progress));
+
                     //更新系统时间
                     tvSysytemTime.setText(getSystemTime());
+
+                    //是网络的视频 有缓冲的进度
+                    if(isNetUri) {
+                        int buffer = videoview.getBufferPercentage();//0~100
+                        int bufferToatal = buffer*seekbarVideo.getMax();
+                        //设置缓存进度
+                        int secondaryProgress = bufferToatal/100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    }else {
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
+
+                   if(videoview.isPlaying()) {
+                       //自定义监听卡
+                       int buffer = progress - prePositiron;
+                       if(buffer < 500) {
+                           //播放卡了
+                           video_buffer.setVisibility(View.VISIBLE);
+                       }else {
+                           //正常播放
+                           video_buffer.setVisibility(View.GONE);
+                       }
+                   }else {
+                       //视频暂停
+                       video_buffer.setVisibility(View.GONE);
+                   }
+                    prePositiron = progress;
 
                     //移除之前的消息，重复发送消息
                     removeMessages(PROGRESS);
@@ -471,6 +590,7 @@ public class SystemPlayerActivity extends Activity {
                 updateVolume(currentVolume);
                 break;
             case R.id.btn_switch_player:
+                showSwitchPlayer();
                 break;
             case R.id.btn_exit:
                 finish();
@@ -498,18 +618,32 @@ public class SystemPlayerActivity extends Activity {
         }
     }
 
+    private void showSwitchPlayer() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("提示");
+        builder.setMessage("当前是系统播放器，是否切换到万能播放器？");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                startViatamioPlayer();
+            }
+        });
+        builder.setNegativeButton("NO",null);
+        builder.show();
+    }
+
     private void updateVolume(int progress) {
-        if(isMute) {
+        if (isMute) {
             //是静音，调节声音
-             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
             //设置seekBar进度
             seekbarVoice.setProgress(0);
-        }else {
+        } else {
             //调节声音
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,progress,0);
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
             //设置seekbar的进度
             seekbarVoice.setProgress(progress);
-            currentVolume= progress;
+            currentVolume = progress;
         }
     }
 
@@ -557,9 +691,12 @@ public class SystemPlayerActivity extends Activity {
         if (mediaItems != null && mediaItems.size() > 0) {
             position--;
             if (position >= 0) {
+                video_loading.setVisibility(View.VISIBLE);
                 MediaItem mediaItem = mediaItems.get(position);
                 videoview.setVideoPath(mediaItem.getData());
                 tvName.setText(mediaItem.getName());
+                btnPlayPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                isNetUri = utils.isNetUri(mediaItem.getData());
                 setButtonStatus();
             }
         }
@@ -569,10 +706,12 @@ public class SystemPlayerActivity extends Activity {
         if (mediaItems != null && mediaItems.size() > 0) {
             position++;
             if (position < mediaItems.size()) {
+                video_loading.setVisibility(View.VISIBLE);
                 MediaItem mediaItem = mediaItems.get(position);
                 videoview.setVideoPath(mediaItem.getData());
                 tvName.setText(mediaItem.getName());
-
+                btnPlayPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                isNetUri = utils.isNetUri(mediaItem.getData());
                 setButtonStatus();
 
                 if (position == mediaItems.size() - 1) {
@@ -586,25 +725,14 @@ public class SystemPlayerActivity extends Activity {
 
     private void setButtonStatus() {
         if (mediaItems != null && mediaItems.size() > 0) {
-            if (mediaItems.size() == 1) {
-                setEnable(false);
-            } else {
-                //集合的大小大于1
-                if (position == 0) {
-                    btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
-                    btnPre.setEnabled(false);
-
-                    btnNext.setBackgroundResource(R.drawable.btn_next_selector);
-                    btnNext.setEnabled(true);
-                } else if (position == mediaItems.size() - 1) {
-                    btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
-                    btnPre.setEnabled(true);
-
-                    btnNext.setBackgroundResource(R.drawable.btn_next_gray);
-                    btnNext.setEnabled(false);
-                } else {
-                    setEnable(true);
-                }
+            setEnable(true);
+            if (position == 0) {
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+            if (position == mediaItems.size() - 1) {
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
             }
         } else if (uri != null) {
             //播放一个地址
@@ -642,10 +770,16 @@ public class SystemPlayerActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        //移除注册的广播
-        unregisterReceiver(receiver);
+        if (receiver != null) {
+            //移除注册的广播
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
         //移除所有消息
         handler.removeCallbacksAndMessages(null);
+        ButterKnife.unbind(this);
+
+        super.onDestroy();
+
     }
 }

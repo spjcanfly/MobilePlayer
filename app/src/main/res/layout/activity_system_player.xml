@@ -14,4 +14,11 @@
 
     <include layout="@layout/mediacontroller"/>
 
+    <include android:id="@+id/video_loading"
+        layout="@layout/video_loading"
+        />
+
+    <include android:id="@+id/video_buffer"
+        layout="@layout/video_buffer"
+        />
 </RelativeLayout>

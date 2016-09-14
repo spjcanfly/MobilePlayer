@@ -24,4 +24,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'com.jakewharton:butterknife:7.0.1'
+    compile project(':MaterialRefreshLayout_library')
+    compile project(':vitamio')
+    compile project(':xutils')
+    compile project(':EventBus')
+    compile files('src/libs/gson-2.2.1.jar')
+    compile files('src/libs/Msc.jar')
+    compile files('src/libs/Sunflower.jar')
 }

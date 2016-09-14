@@ -2,6 +2,7 @@ package com.example.spj.mobileplayer.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.text.format.Formatter;
@@ -25,11 +26,15 @@ public class VideoFragmentAdapter extends BaseAdapter {
     private  Context mContext;
     private final ArrayList<MediaItem> mediaItems;
     private final Utils utils;
+    private boolean isVideo = true;
+    //加载封面图片,列表的位置
+    private int pos=-1;
 
-    public VideoFragmentAdapter(Context mContext, ArrayList<MediaItem> mediaItems) {
+    public VideoFragmentAdapter(Context mContext, ArrayList<MediaItem> mediaItems,boolean isVideo) {
         this.mContext = mContext;
         this.mediaItems = mediaItems;
-        utils = new Utils();
+        utils =Utils.getInstance();
+        this.isVideo = isVideo;
     }
 
     @Override
@@ -68,8 +73,35 @@ public class VideoFragmentAdapter extends BaseAdapter {
         viewHolder.tv_time.setText(utils.stringForTime((int) mediaItem.getDuration()));
         viewHolder.tv_size.setText(Formatter.formatFileSize(mContext, mediaItem.getSize()));
 
-        //加载视频的缩略图
-        loadImage(data,viewHolder.iv_icon);
+
+        if(isVideo) {
+            //加载视频的缩略图
+            loadImage(data,viewHolder.iv_icon);
+        }else {
+
+//            if(position == pos) {
+//                viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+//            }else {
+//                Bitmap bitmap = Utils.getArtworkFromFile(mContext, mediaItem.getId(), mediaItem.getAlbum_id());
+//                viewHolder.iv_icon.setImageBitmap(bitmap);
+//            }
+            //设置音乐专辑的图片
+            Uri selectedAudio = Uri.parse(mediaItem.getData());
+            MediaMetadataRetriever myRetriever = new MediaMetadataRetriever();
+            myRetriever.setDataSource(mContext, selectedAudio); // the URI of audio file
+            byte[] artwork;
+
+            artwork = myRetriever.getEmbeddedPicture();
+
+            if (artwork != null) {
+                Bitmap bMap = BitmapFactory.decodeByteArray(artwork, 0, artwork.length);
+                viewHolder.iv_icon.setImageBitmap(bMap);
+
+            } else {
+                viewHolder.iv_icon.setImageResource(R.drawable.music_default_bg);
+
+            }
+        }
 
 
         return convertView;
