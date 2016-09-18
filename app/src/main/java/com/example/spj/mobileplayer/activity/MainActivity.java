@@ -25,7 +25,7 @@ public class MainActivity extends FragmentActivity {
 
     private RadioGroup rg_main;
     private ArrayList<BaseFragment> baseFragments;
-    private  Fragment mContent;
+    private Fragment mContent;
     private int position;
 
     @Override
@@ -43,6 +43,7 @@ public class MainActivity extends FragmentActivity {
 
     /**
      * 解决安卓6.0以上版本不能读取外部存储权限的问题
+     *
      * @param activity
      * @return
      */
@@ -85,7 +86,6 @@ public class MainActivity extends FragmentActivity {
     private class MyOnCheckedChangeListener implements RadioGroup.OnCheckedChangeListener {
 
 
-
         @Override
         public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
 
@@ -93,50 +93,46 @@ public class MainActivity extends FragmentActivity {
 
 
             switch (checkedId) {
-                case R.id.rb_local_video :
-                   position =0;
+                case R.id.rb_local_video:
+                    position = 0;
                     break;
-                case R.id.rb_local_audio :
-                    position =1;
+                case R.id.rb_local_audio:
+                    position = 1;
                     break;
-                case R.id.rb_net_video :
-                    position =2;
+                case R.id.rb_net_video:
+                    position = 2;
                     break;
-                case R.id.rb_net_audio :
-                    position =3;
+                case R.id.rb_net_audio:
+                    position = 3;
                     break;
             }
             //根据位置从集合中取出对应的Fragment
             Fragment toFragment = getFragment(position);
 
             //把对应的Fragment绑定到Activity中
-            switchFragment(mContent,toFragment);
+            switchFragment(mContent, toFragment);
 
         }
     }
 
     //刚才显示过的Fragment隐藏，马上要显示的显示，添加
     private void switchFragment(Fragment fromFragment, Fragment toFragment) {
-        if(mContent != toFragment) {
+        if (mContent != toFragment) {
             mContent = toFragment;
 
-            if(toFragment != null) {
+            if (toFragment != null) {
                 FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
                 //判断toFragment是否添加
-                if(toFragment.isAdded()) {
-                    //添加了，隐藏fromFragment
-                    if(fromFragment != null) {
-                        ft.hide(fromFragment);
-                    }
+                if (toFragment.isAdded()) {
                     //显示toFragment,提交
                     ft.show(toFragment).commit();
-                }else{
-                    //没有添加，隐藏fromFragment，
-                    if(fromFragment != null) {
-                        ft.hide(fromFragment);
-                    }
+                } else {
                     //添加toFragment，显示，提交
-                    ft.add(R.id.fl_content,toFragment).commit();
+                    ft.add(R.id.fl_content, toFragment).commit();
+                }
+                //隐藏fromFragment
+                if (fromFragment != null) {
+                    ft.hide(fromFragment);
                 }
             }
         }
@@ -144,24 +140,24 @@ public class MainActivity extends FragmentActivity {
 
     private BaseFragment getFragment(int position) {
 
-        if(baseFragments != null && baseFragments.size()>0) {
+        if (baseFragments != null && baseFragments.size() > 0) {
             return baseFragments.get(position);
         }
         return null;
     }
 
-    private  boolean isExit=true;
+    private boolean isExit = true;
     private Handler handler = new Handler();
 
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if(keyCode == KeyEvent.KEYCODE_BACK) {
-            if(position != 0) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (position != 0) {
                 rg_main.check(R.id.rb_local_video);
                 return true;
-            }else {
-                if(isExit) {
+            } else {
+                if (isExit) {
                     isExit = false;
                     Toast.makeText(MainActivity.this, "再按一次退出！", Toast.LENGTH_SHORT).show();
                     handler.postDelayed(new Runnable() {
@@ -169,7 +165,7 @@ public class MainActivity extends FragmentActivity {
                         public void run() {
                             isExit = true;
                         }
-                    },2000);
+                    }, 2000);
                     return true;
                 }
 
